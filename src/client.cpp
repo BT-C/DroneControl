@@ -9,6 +9,8 @@
 #include <cstring>
 #include <iostream>
 
+
+
 int main(){
     int port_in  = 12321;
     int port_out = 12000;
@@ -44,13 +46,17 @@ int main(){
     }
 
     int counter = 0;
+    
     while(1){
         
         addr.sin_family = AF_INET;
         addr.sin_port   = htons(port_out);
         addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-        sendto(sockfd, "hello world", 11, 0, (sockaddr*)&addr, addr_len);
+        unsigned char send_buf[2048] = {0};
+        send_buf[0] = 10*16 + 5;
+        send_buf[1] = 255;
+        sendto(sockfd, send_buf, 2, 0, (sockaddr*)&addr, addr_len);
         printf("Sended %d\n", ++counter);
         sleep(1);
     }
