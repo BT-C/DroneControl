@@ -1,0 +1,1 @@
+/usr/bin/c++    -rdynamic CMakeFiles/client.dir/src/client.cpp.o  -o client   -L/mnt/hdd2/chenbeitao/download/TensorRT-8.2.1.8/targets/x86_64-linux-gnu/lib  -L/usr/local/cuda-11.5/targets/x86_64-linux/lib 

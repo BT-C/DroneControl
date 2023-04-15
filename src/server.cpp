@@ -12,8 +12,8 @@
 int main(){
 
     //同一台电脑测试，需要两个端口
-    int port_in  = 12321;
-    int port_out = 12322;
+    // int port_in  = 12321;
+    int port_out = 12000;
     int sockfd;
 
     // 创建socket
@@ -55,13 +55,14 @@ int main(){
         memset(&src, 0, sizeof(src));
 	
      // 阻塞住接受消息
+        printf("start receive\n");
         int sz = recvfrom(sockfd, buffer, 128, 0, (sockaddr*)&src, &src_len);
         if (sz > 0){
             buffer[sz] = 0;
             printf("Get Message %d: %s\n", counter++, buffer);
         }
         else{
-            puts("timeout");
+            // puts("timeout");
         }
     }
 

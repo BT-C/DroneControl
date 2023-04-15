@@ -1,0 +1,5 @@
+/mnt/hdd2/chenbeitao/code/2030/DroneControl/build/CMakeFiles/rebuild_cache.dir
+/mnt/hdd2/chenbeitao/code/2030/DroneControl/build/CMakeFiles/edit_cache.dir
+/mnt/hdd2/chenbeitao/code/2030/DroneControl/build/CMakeFiles/server.dir
+/mnt/hdd2/chenbeitao/code/2030/DroneControl/build/CMakeFiles/client.dir
+/mnt/hdd2/chenbeitao/code/2030/DroneControl/build/CMakeFiles/CMakeCXXCompilerId.dir

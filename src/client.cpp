@@ -11,7 +11,7 @@
 
 int main(){
     int port_in  = 12321;
-    int port_out = 12322;
+    int port_out = 12000;
     int sockfd;
 
     // 创建socket
