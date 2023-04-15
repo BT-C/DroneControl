@@ -128,6 +128,35 @@ void wrapMessage(unsigned char *send_buf, unsigned char length, unsigned char se
     send_buf[5] = sequenceNumber;
 }
 
+void float2hex(unsigned char *out, float value){
+    unsigned char *temp = (unsigned char *)&value;
+    for (int i = 0; i < 4; i ++)
+        out[4 - i] = temp[i];
+}
+
+void setPosition(int sockfd, struct sockaddr_in addr, unsigned char commandId, unsigned char sequenceNumber,
+        unsigned short time, float x, float y, float z, float offset){
+    socklen_t addr_len=sizeof(addr);
+
+    unsigned char send_buf[2048] = {0};
+    unsigned char length = 8 + 21;
+    wrapMessage(send_buf, length, sequenceNumber);
+    send_buf[6] = 15 * 16 + 4; // 0xF4
+    send_buf[7] = commandId; // 0x03
+    send_buf[8] = time % 256;
+    send_buf[9] = (unsigned int)(time / 256);
+    float2hex(&send_buf[10], x);
+    float2hex(&send_buf[14], y);
+    float2hex(&send_buf[18], z);
+    float2hex(&send_buf[22], offset);
+
+    getCRC(&send_buf[8], send_buf, length - 4);
+    
+    showMessage(send_buf, length);
+    sendto(sockfd, send_buf, 2, 0, (sockaddr*)&addr, addr_len);
+    printf("send query position\n");
+}
+
 void setSeed(int sockfd, struct sockaddr_in addr, unsigned char commandId, unsigned char sequenceNumber){
     socklen_t addr_len=sizeof(addr);
 
@@ -178,6 +207,36 @@ void quirePositionv1(int sockfd, struct sockaddr_in addr, unsigned char commandI
     wrapMessage(send_buf, length, sequenceNumber);
     send_buf[6] = 15 * 16 + 4; // 0xF4
     send_buf[7] = commandId; // 0x03
+    getCRC(&send_buf[8], send_buf, length - 4);
+    
+    showMessage(send_buf, length);
+    sendto(sockfd, send_buf, 2, 0, (sockaddr*)&addr, addr_len);
+    printf("send query position\n");
+}
+
+void land(int sockfd, struct sockaddr_in addr, unsigned char commandId, unsigned char sequenceNumber){
+    socklen_t addr_len=sizeof(addr);
+
+    unsigned char send_buf[2048] = {0};
+    unsigned char length = 8 + 2;
+    wrapMessage(send_buf, length, sequenceNumber);
+    send_buf[6] = 15 * 16 + 4; // 0xF4
+    send_buf[7] = commandId; // 0x06
+    getCRC(&send_buf[8], send_buf, length - 4);
+    
+    showMessage(send_buf, length);
+    sendto(sockfd, send_buf, 2, 0, (sockaddr*)&addr, addr_len);
+    printf("send query position\n");
+}
+
+void quirePositionv2(int sockfd, struct sockaddr_in addr, unsigned char commandId, unsigned char sequenceNumber){
+    socklen_t addr_len=sizeof(addr);
+
+    unsigned char send_buf[2048] = {0};
+    unsigned char length = 8 + 2;
+    wrapMessage(send_buf, length, sequenceNumber);
+    send_buf[6] = 15 * 16 + 4; // 0xF4
+    send_buf[7] = commandId; // 0x07
     getCRC(&send_buf[8], send_buf, length - 4);
     
     showMessage(send_buf, length);
@@ -260,9 +319,12 @@ int main(){
             std::cin >> commandId;
             
             if (commandId == 0){
-                
+                float x = 1, y = 2, z = 3, offset = 0.1;
+                unsigned short time = 5;
+                setPosition(sockfd, addr, commandId, sequenceNumber, time, x, y, z, offset);
             }else if (commandId == 1){
-                setSeed(sockfd, addr, commandId, 255);
+                // setSeed(sockfd, addr, commandId, 255);
+                setSeed(sockfd, addr, commandId, sequenceNumber);
             }else if (commandId == 2){
                 
             }else if (commandId == 3){
@@ -272,9 +334,9 @@ int main(){
             }else if (commandId == 5){
 
             }else if (commandId == 6){
-
+                land(sockfd, addr, commandId, sequenceNumber);
             }else if (commandId == 7){
-                
+                quirePositionv2(sockfd, addr, commandId, sequenceNumber);
             }else{
                 printf("invalid command id\n");
             }
