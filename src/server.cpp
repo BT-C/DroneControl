@@ -143,6 +143,57 @@ void setPosition(int sockfd, struct sockaddr_in addr, unsigned char commandId, u
     wrapMessage(send_buf, length, sequenceNumber);
     send_buf[6] = 15 * 16 + 4; // 0xF4
     send_buf[7] = commandId; // 0x03
+    send_buf[8] = 0;
+
+    send_buf[9] = time % 256;
+    send_buf[10] = (unsigned int)(time / 256);
+    float2hex(&send_buf[11], x);
+    float2hex(&send_buf[15], y);
+    float2hex(&send_buf[19], z);
+    float2hex(&send_buf[23], offset);
+
+    getCRC(&send_buf[length - 2], send_buf, length - 4);
+    
+    showMessage(send_buf, length);
+    sendto(sockfd, send_buf, 2, 0, (sockaddr*)&addr, addr_len);
+    printf("set position\n");
+}
+
+void setSeed(int sockfd, struct sockaddr_in addr, unsigned char commandId, unsigned char sequenceNumber,
+        unsigned short time, float x, float y, float z, float offset){
+    socklen_t addr_len=sizeof(addr);
+
+    unsigned char send_buf[2048] = {0};
+    unsigned char length = 8 + 21;
+    wrapMessage(send_buf, length, sequenceNumber);
+    send_buf[6] = 15 * 16 + 4; // 0xF4
+    send_buf[7] = commandId; // 0x03
+    send_buf[8] = 0;
+    
+    send_buf[9] = time % 256;
+    send_buf[10] = (unsigned int)(time / 256);
+    float2hex(&send_buf[11], x);
+    float2hex(&send_buf[15], y);
+    float2hex(&send_buf[19], z);
+    float2hex(&send_buf[23], offset);
+
+    getCRC(&send_buf[length - 2], send_buf, length - 4);
+    
+    showMessage(send_buf, length);
+    sendto(sockfd, send_buf, 2, 0, (sockaddr*)&addr, addr_len);
+    printf("set seed\n");
+}
+
+void setPose(int sockfd, struct sockaddr_in addr, unsigned char commandId, unsigned char sequenceNumber,
+        unsigned short time, float x, float y, float z, float offset){
+    socklen_t addr_len=sizeof(addr);
+
+    unsigned char send_buf[2048] = {0};
+    unsigned char length = 8 + 20;
+    wrapMessage(send_buf, length, sequenceNumber);
+    send_buf[6] = 15 * 16 + 4; // 0xF4
+    send_buf[7] = commandId; // 0x03
+
     send_buf[8] = time % 256;
     send_buf[9] = (unsigned int)(time / 256);
     float2hex(&send_buf[10], x);
@@ -150,14 +201,14 @@ void setPosition(int sockfd, struct sockaddr_in addr, unsigned char commandId, u
     float2hex(&send_buf[18], z);
     float2hex(&send_buf[22], offset);
 
-    getCRC(&send_buf[8], send_buf, length - 4);
+    getCRC(&send_buf[length - 2], send_buf, length - 4);
     
     showMessage(send_buf, length);
     sendto(sockfd, send_buf, 2, 0, (sockaddr*)&addr, addr_len);
-    printf("send query position\n");
+    printf("set pose\n");
 }
 
-void setSeed(int sockfd, struct sockaddr_in addr, unsigned char commandId, unsigned char sequenceNumber){
+void setSeedtest(int sockfd, struct sockaddr_in addr, unsigned char commandId, unsigned char sequenceNumber){
     socklen_t addr_len=sizeof(addr);
 
     unsigned char send_buf[2048] = {0};
@@ -251,6 +302,10 @@ unsigned char getNext(unsigned char x){
     return x;
 }
 
+void parseMessage(){
+
+}
+
 int main(){
     //同一台电脑测试，需要两个端口
     // int port_in  = 12321;
@@ -286,8 +341,8 @@ int main(){
         return false;
     }
 
-    unsigned char buffer[128];
-    memset(buffer, 0, 128);
+    unsigned char buffer[2048];
+    memset(buffer, 0, 2048);
 
     int counter = 0;
     unsigned char sequenceNumber = -1;
@@ -298,7 +353,7 @@ int main(){
 	
      // 阻塞住接受消息
         printf("start receive\n");
-        int sz = recvfrom(sockfd, buffer, 128, 0, (sockaddr*)&src, &src_len);
+        int sz = recvfrom(sockfd, buffer, 2048, 0, (sockaddr*)&src, &src_len);
         if (sz > 0){
             buffer[sz] = 0;
             printf("length : %d\n", sz);
@@ -320,17 +375,22 @@ int main(){
             
             if (commandId == 0){
                 float x = 1, y = 2, z = 3, offset = 0.1;
-                unsigned short time = 5;
+                unsigned short time = 0;
                 setPosition(sockfd, addr, commandId, sequenceNumber, time, x, y, z, offset);
             }else if (commandId == 1){
                 // setSeed(sockfd, addr, commandId, 255);
-                setSeed(sockfd, addr, commandId, sequenceNumber);
+                // setSeed(sockfd, addr, commandId, sequenceNumber);
+                float x = 1, y = 2, z = 3, offset = 0.1;
+                unsigned short time = 0;
+                setSeed(sockfd, addr, commandId, sequenceNumber, time, x, y, z, offset);
             }else if (commandId == 2){
-                
+                float x = 1, y = 2, z = 3, offset = 0.1;
+                unsigned short time = 0;
+                setPose(sockfd, addr, commandId, sequenceNumber, time, x, y, z, offset);
             }else if (commandId == 3){
                 quirePositionv1(sockfd, addr, commandId, sequenceNumber);
             }else if (commandId == 4){
-
+                
             }else if (commandId == 5){
 
             }else if (commandId == 6){
