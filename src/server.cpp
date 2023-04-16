@@ -98,11 +98,16 @@ unsigned short do_crc(unsigned char *ptr, int len)
     return crc;
 }
 
-void getCRC(unsigned char *last_send_buf, unsigned char *start_buf, int length){
+void setCRC(unsigned char *last_send_buf, unsigned char *start_buf, int length){
     // unsigned short crc = do_crc_table(start_buf, length);
     unsigned short crc = Calc(start_buf, 2, length);
     last_send_buf[1] = (unsigned char)(crc / 256);
     last_send_buf[0] = (unsigned char)(crc % 256);
+}
+
+unsigned short getCRC(unsigned char *start_buf, int length){
+    unsigned short crc = Calc(start_buf, 2, length);
+    return crc;
 }
 
 void showMessage(unsigned char *send_buf, int length){
@@ -116,8 +121,8 @@ void showMessage(unsigned char *send_buf, int length){
 
 void wrapMessage(unsigned char *send_buf, unsigned char length, unsigned char sequenceNumber){
     // 0xA55A
-    send_buf[0] = 10 * 16 + 5;      
-    send_buf[1] = 5 * 16 + 10;
+    send_buf[0] = 0xA5;      
+    send_buf[1] = 0x5A;
     // length of message
     send_buf[2] = length;
     // SRCID (0x00)
@@ -141,7 +146,7 @@ void setPosition(int sockfd, struct sockaddr_in addr, unsigned char commandId, u
     unsigned char send_buf[2048] = {0};
     unsigned char length = 8 + 21;
     wrapMessage(send_buf, length, sequenceNumber);
-    send_buf[6] = 15 * 16 + 4; // 0xF4
+    send_buf[6] = 0xF4; // 0xF4
     send_buf[7] = commandId; // 0x03
     send_buf[8] = 0;
 
@@ -152,7 +157,7 @@ void setPosition(int sockfd, struct sockaddr_in addr, unsigned char commandId, u
     float2hex(&send_buf[19], z);
     float2hex(&send_buf[23], offset);
 
-    getCRC(&send_buf[length - 2], send_buf, length - 4);
+    setCRC(&send_buf[length - 2], send_buf, length - 4);
     
     showMessage(send_buf, length);
     sendto(sockfd, send_buf, 2, 0, (sockaddr*)&addr, addr_len);
@@ -166,7 +171,7 @@ void setSeed(int sockfd, struct sockaddr_in addr, unsigned char commandId, unsig
     unsigned char send_buf[2048] = {0};
     unsigned char length = 8 + 21;
     wrapMessage(send_buf, length, sequenceNumber);
-    send_buf[6] = 15 * 16 + 4; // 0xF4
+    send_buf[6] = 0xF4; // 0xF4
     send_buf[7] = commandId; // 0x03
     send_buf[8] = 0;
     
@@ -177,7 +182,7 @@ void setSeed(int sockfd, struct sockaddr_in addr, unsigned char commandId, unsig
     float2hex(&send_buf[19], z);
     float2hex(&send_buf[23], offset);
 
-    getCRC(&send_buf[length - 2], send_buf, length - 4);
+    setCRC(&send_buf[length - 2], send_buf, length - 4);
     
     showMessage(send_buf, length);
     sendto(sockfd, send_buf, 2, 0, (sockaddr*)&addr, addr_len);
@@ -191,7 +196,7 @@ void setPose(int sockfd, struct sockaddr_in addr, unsigned char commandId, unsig
     unsigned char send_buf[2048] = {0};
     unsigned char length = 8 + 20;
     wrapMessage(send_buf, length, sequenceNumber);
-    send_buf[6] = 15 * 16 + 4; // 0xF4
+    send_buf[6] = 0xF4; // 0xF4
     send_buf[7] = commandId; // 0x03
 
     send_buf[8] = time % 256;
@@ -201,7 +206,7 @@ void setPose(int sockfd, struct sockaddr_in addr, unsigned char commandId, unsig
     float2hex(&send_buf[18], z);
     float2hex(&send_buf[22], offset);
 
-    getCRC(&send_buf[length - 2], send_buf, length - 4);
+    setCRC(&send_buf[length - 2], send_buf, length - 4);
     
     showMessage(send_buf, length);
     sendto(sockfd, send_buf, 2, 0, (sockaddr*)&addr, addr_len);
@@ -214,7 +219,7 @@ void setSeedtest(int sockfd, struct sockaddr_in addr, unsigned char commandId, u
     unsigned char send_buf[2048] = {0};
     unsigned char length = 8 + 21;
     wrapMessage(send_buf, length, sequenceNumber);
-    send_buf[6] = 15 * 16 + 4; // 0xF4
+    send_buf[6] = 0xF4; // 0xF4
     send_buf[7] = commandId; // 0x01
     send_buf[8] = 1;
 
@@ -242,7 +247,7 @@ void setSeedtest(int sockfd, struct sockaddr_in addr, unsigned char commandId, u
     send_buf[26] = 0;
 
 
-    getCRC(&send_buf[27], send_buf, length - 4);
+    setCRC(&send_buf[27], send_buf, length - 4);
 
     showMessage(send_buf, length);
     sendto(sockfd, send_buf, 2, 0, (sockaddr*)&addr, addr_len);
@@ -256,9 +261,9 @@ void quirePositionv1(int sockfd, struct sockaddr_in addr, unsigned char commandI
     unsigned char send_buf[2048] = {0};
     unsigned char length = 8 + 2;
     wrapMessage(send_buf, length, sequenceNumber);
-    send_buf[6] = 15 * 16 + 4; // 0xF4
+    send_buf[6] = 0xF4; // 0xF4
     send_buf[7] = commandId; // 0x03
-    getCRC(&send_buf[8], send_buf, length - 4);
+    setCRC(&send_buf[8], send_buf, length - 4);
     
     showMessage(send_buf, length);
     sendto(sockfd, send_buf, 2, 0, (sockaddr*)&addr, addr_len);
@@ -271,9 +276,9 @@ void land(int sockfd, struct sockaddr_in addr, unsigned char commandId, unsigned
     unsigned char send_buf[2048] = {0};
     unsigned char length = 8 + 2;
     wrapMessage(send_buf, length, sequenceNumber);
-    send_buf[6] = 15 * 16 + 4; // 0xF4
+    send_buf[6] = 0xF4; // 0xF4
     send_buf[7] = commandId; // 0x06
-    getCRC(&send_buf[8], send_buf, length - 4);
+    setCRC(&send_buf[8], send_buf, length - 4);
     
     showMessage(send_buf, length);
     sendto(sockfd, send_buf, 2, 0, (sockaddr*)&addr, addr_len);
@@ -286,9 +291,9 @@ void quirePositionv2(int sockfd, struct sockaddr_in addr, unsigned char commandI
     unsigned char send_buf[2048] = {0};
     unsigned char length = 8 + 2;
     wrapMessage(send_buf, length, sequenceNumber);
-    send_buf[6] = 15 * 16 + 4; // 0xF4
+    send_buf[6] = 0xF4; // 0xF4
     send_buf[7] = commandId; // 0x07
-    getCRC(&send_buf[8], send_buf, length - 4);
+    setCRC(&send_buf[8], send_buf, length - 4);
     
     showMessage(send_buf, length);
     sendto(sockfd, send_buf, 2, 0, (sockaddr*)&addr, addr_len);
@@ -302,8 +307,48 @@ unsigned char getNext(unsigned char x){
     return x;
 }
 
-void parseMessage(){
+float hex2float(unsigned char *buf){
+    float *out = (float *)buf;
+    for (int i = 0; i < 4; i ++){
+        unsigned char temp = out[4 - i];
+        out[4 - i] = out[i];
+        out[i] = temp;
+    }
 
+    return (*out);
+}
+
+void parseMessage(unsigned char *rec_buf, int length){
+    if ((rec_buf[0] != 0xA5) or (rec_buf[1] != 0x5A)){
+        printf("invalid start infomation message\n");
+        return ;
+    }
+
+    int msg_len = rec_buf[2];
+    unsigned short crc = getCRC(rec_buf, msg_len - 4);
+    if (rec_buf[length - 2] != (crc % 256) | rec_buf[length - 1] != (crc / 256)){
+        printf("invalid crc\n");
+        return ;
+    }
+
+    unsigned char * rec_infor = &rec_buf[6];
+    if (rec_infor[0] != 0x00)
+        return ;
+
+    float roll = hex2float(&rec_buf[2]);
+    float pitch = hex2float(&rec_buf[6]);
+    float yaw = hex2float(&rec_buf[10]);
+    float velx = hex2float(&rec_buf[14]);
+    float vely = hex2float(&rec_buf[18]);
+    float velz = hex2float(&rec_buf[22]);
+    float posx = hex2float(&rec_buf[26]);
+    float posy = hex2float(&rec_buf[30]);
+    float posz = hex2float(&rec_buf[34]);
+
+    printf("Position information :\n");
+    printf("Roll : %f, Pitch : %f, Yaw : %f\n", roll, pitch, yaw);
+    printf("Velx : %f, Vely : %f, Velz : %f\n", velx, vely, velz);
+    printf("Posx : %f, Posy : %f, Posz : %f\n", posx, posy, posz);
 }
 
 int main(){
@@ -366,7 +411,7 @@ int main(){
             // for (int i = 0; i < sz; i ++){
             //     printf("%x ", buffer[i]);
             // }
-
+            parseMessage(buffer, 2048);
 
             // =======================================================================
             sequenceNumber = getNext(sequenceNumber);
